@@ -1,108 +1,84 @@
 openapi: 3.0.1
 info:
-  title: Product API
+  title: Loan Management API
   version: 1.0.0
-  description: API for managing products
 paths:
-  /api/products:
+  /loans:
+    get:
+      summary: Get all loans
+      responses:
+        '200':
+          description: Successful operation
     post:
-      summary: Create a new product
-      operationId: createProduct
+      summary: Create a new loan
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Product'
+              $ref: '#/components/schemas/Loan'
       responses:
         '201':
-          description: Product created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
+          description: Loan created
+  /loans/{id}:
     get:
-      summary: Get all products
-      operationId: getAllProducts
-      responses:
-        '200':
-          description: List of products
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Product'
-  /api/products/{id}:
-    get:
-      summary: Get product by ID
-      operationId: getProductById
+      summary: Get loan by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
-          description: Product found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
+          description: Successful operation
     put:
-      summary: Update a product
-      operationId: updateProduct
+      summary: Update loan by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Product'
+              $ref: '#/components/schemas/Loan'
       responses:
         '200':
-          description: Product updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
+          description: Loan updated
     delete:
-      summary: Delete a product
-      operationId: deleteProduct
+      summary: Delete loan by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '204':
-          description: Product deleted
+          description: Loan deleted
 components:
   schemas:
-    Product:
+    Loan:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        price:
+          type: integer
+          format: int64
+        amount:
           type: number
           format: double
-        stock:
+        term:
           type: integer
-        category:
+          format: int32
+        interestRate:
+          type: number
+          format: double
+        status:
           type: string
-      required:
-        - name
-        - price
-        - stock
-        - category

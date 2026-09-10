@@ -1,13 +1,13 @@
-# Implementación de una API REST para gestión de productos
+# Implementación de una API REST en un sistema de gestión de préstamos
 
-El equipo de desarrollo de una plataforma de comercio electrónico necesita una API REST para gestionar productos. La API debe permitir crear, leer, actualizar y eliminar productos. Los productos tienen un nombre, precio, stock y categoría. La API debe validar que los nombres de los productos no se dupliquen y que los precios no sean negativos. Además, debe manejar adecuadamente los errores y proporcionar documentación OpenAPI.
+En un sistema de gestión de préstamos bancarios, se requiere implementar una API REST que permita a los clientes consultar el estado de sus préstamos y realizar nuevos préstamos. La API debe integrarse con un motor de evaluación de riesgos y un sistema de contabilidad. Los préstamos tienen atributos como monto, plazo, tasa de interés y estado. La API debe manejar correctamente los errores de validación y garantizar la idempotencia en las solicitudes de préstamo. El sistema procesa un promedio de 1 500 solicitudes por segundo en hora pico.
 
 ## Informacion General
 
 | Campo | Valor |
 |-------|-------|
-| **Tema** | Desarrollo de una API REST con Spring Boot y JPA |
-| **Nivel** | junior-l2 |
+| **Tema** | Java Spring Boot |
+| **Nivel** | junior-l1 |
 | **Tipo** | practical |
 | **Tiempo estimado** | 8 horas |
 
@@ -38,84 +38,87 @@ El equipo de desarrollo de una plataforma de comercio electrónico necesita una 
 
 </details>
 
-### Fase 1: Creación de la estructura básica de la API
+### Fase 1: Definición de endpoints y modelo de datos
 
-**Objetivo:** Implementar la funcionalidad mínima para crear y leer productos.
+**Objetivo:** Definir los endpoints necesarios y el modelo de datos para representar los préstamos y sus atributos.
 
 **Tiempo estimado:** 2 horas
 
 **Instrucciones:**
 
-- Diseña la estructura de la API para crear y leer productos.
-- Implementa la validación de nombres duplicados y precios negativos.
-- Asegúrate de que la API devuelva los productos creados correctamente.
+- Identificar los endpoints requeridos para consultar y crear préstamos.
+- Definir el modelo de datos para los préstamos, incluyendo atributos como monto, plazo, tasa de interés y estado.
+- Establecer las relaciones entre los préstamos y otros componentes del sistema.
 
-**Entregable:** API REST que permite crear y leer productos con las validaciones necesarias.
+**Entregable:** Modelo de datos y definición de endpoints para la API REST.
 
 <details>
 <summary>Pistas de conocimiento</summary>
 
-- Considera cómo estructurar los endpoints para crear y leer productos.
-- Piensa en cómo manejar los errores de validación.
+- Considera los atributos necesarios para representar un préstamo.
+- Piensa en las relaciones que los préstamos tienen con otros componentes del sistema.
 
 </details>
 
-### Fase 2: Actualización y eliminación de productos
+### Fase 2: Implementación de la lógica de negocio
 
-**Objetivo:** Implementar la funcionalidad para actualizar y eliminar productos.
+**Objetivo:** Implementar la lógica de negocio para la creación y consulta de préstamos, incluyendo la validación de datos y la integración con el motor de evaluación de riesgos.
 
 **Tiempo estimado:** 3 horas
 
 **Instrucciones:**
 
-- Añade endpoints para actualizar y eliminar productos.
-- Asegúrate de que la actualización mantenga las validaciones de nombres duplicados y precios negativos.
-- Implementa la eliminación de productos de manera segura.
+- Implementar la lógica para crear y consultar préstamos.
+- Integrar la API con el motor de evaluación de riesgos para validar las solicitudes de préstamo.
+- Manejar los errores de validación y garantizar la idempotencia en las solicitudes de préstamo.
 
-**Entregable:** API REST que permite crear, leer, actualizar y eliminar productos con las validaciones necesarias.
+**Entregable:** Lógica de negocio implementada para la creación y consulta de préstamos, con integración al motor de evaluación de riesgos.
 
 <details>
 <summary>Pistas de conocimiento</summary>
 
-- Considera cómo manejar las validaciones durante la actualización de productos.
-- Piensa en cómo asegurar que la eliminación de productos sea segura y no cause inconsistencias.
+- Considera los posibles errores de validación y cómo manejarlos.
+- Piensa en cómo garantizar la idempotencia en las solicitudes de préstamo.
 
 </details>
 
-### Fase 3: Documentación OpenAPI
+### Fase 3: Documentación y pruebas
 
-**Objetivo:** Proporcionar documentación OpenAPI para la API.
+**Objetivo:** Documentar la API utilizando OpenAPI y realizar pruebas para garantizar su correcto funcionamiento.
 
 **Tiempo estimado:** 3 horas
 
 **Instrucciones:**
 
-- Genera documentación OpenAPI para la API.
-- Asegúrate de que la documentación sea clara y describa todas las funcionalidades y validaciones de la API.
-- Verifica que la documentación esté actualizada y sea útil para los usuarios de la API.
+- Documentar la API utilizando OpenAPI.
+- Realizar pruebas unitarias y de integración para garantizar el correcto funcionamiento de la API.
+- Verificar que la API maneje correctamente los errores y garantiza la idempotencia en las solicitudes de préstamo.
 
-**Entregable:** API REST con documentación OpenAPI completa y actualizada.
+**Entregable:** API documentada y pruebas unitarias y de integración realizadas.
 
 <details>
 <summary>Pistas de conocimiento</summary>
 
-- Considera cómo hacer que la documentación sea clara y útil para los usuarios.
-- Piensa en cómo mantener la documentación actualizada con los cambios en la API.
+- Utiliza OpenAPI para documentar los endpoints y sus parámetros.
+- Realiza pruebas para cubrir los casos de uso más comunes y los edge cases identificados.
 
 </details>
 
 ## Dimensiones Evaluadas
 
-- **queEs**: ¿Qué es una API REST y cuáles son sus componentes principales?
-- **paraQueSirve**: ¿Para qué sirve la validación de nombres duplicados y precios negativos en la API?
-- **comoSeUsa**: ¿Cómo se usa la documentación OpenAPI para entender y utilizar la API?
-- **erroresComunes**: ¿Cuáles son los errores comunes al implementar una API REST y cómo se pueden evitar?
+- **queEs**: ¿Qué es un préstamo y cuáles son sus atributos esenciales?
+- **paraQueSirve**: ¿Para qué sirve la API REST en el contexto del sistema de gestión de préstamos?
+- **comoSeUsa**: ¿Cómo se usa la API para crear y consultar préstamos?
+- **erroresComunes**: ¿Cuáles son los errores comunes que pueden ocurrir al crear un préstamo y cómo se manejan?
+- **queDecisionesImplica**: ¿Qué decisiones implica la integración de la API con el motor de evaluación de riesgos?
 
 ## Criterios de Evaluacion
 
-- Implementación correcta de la funcionalidad para crear, leer, actualizar y eliminar productos.
-- Validación adecuada de nombres duplicados y precios negativos.
-- Documentación OpenAPI clara y actualizada.
+- Definición correcta de endpoints y modelo de datos.
+- Implementación de la lógica de negocio para la creación y consulta de préstamos.
+- Integración correcta con el motor de evaluación de riesgos.
+- Manejo adecuado de errores de validación y garantía de idempotencia.
+- Documentación completa utilizando OpenAPI y realización de pruebas unitarias y de integración.
 
 ## Como trabajar con un asistente de IA
 

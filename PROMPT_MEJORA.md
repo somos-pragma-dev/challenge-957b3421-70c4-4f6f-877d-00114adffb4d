@@ -14,17 +14,17 @@ Este bloque manda sobre los archivos adjuntos. El stack y el rol salen de AQUÍ,
 Crear una API REST con Spring Boot, JPA y documentación OpenAPI
 
 ### Reto
-- Tema: Desarrollo de una API REST con Spring Boot y JPA
-- Seniority: junior-l2
+- Tema: Java Spring Boot
+- Seniority: junior-l1
 - Tipo: practical
-- Título: Implementación de una API REST para gestión de productos
+- Título: Implementación de una API REST en un sistema de gestión de préstamos
 - Tiempo estimado: 8 horas
 
 ### Fases (trabajo del HUMANO — PROHIBIDO completarlas)
 No implementes estos entregables. Dejalos como hueco pedagógico. El asistente solo materializa el proyecto arrancable para que el participante pueda trabajar.
-- Fase 1: Creación de la estructura básica de la API — objetivo: Implementar la funcionalidad mínima para crear y leer productos. — entregable (NO resolver): API REST que permite crear y leer productos con las validaciones necesarias.
-- Fase 2: Actualización y eliminación de productos — objetivo: Implementar la funcionalidad para actualizar y eliminar productos. — entregable (NO resolver): API REST que permite crear, leer, actualizar y eliminar productos con las validaciones necesarias.
-- Fase 3: Documentación OpenAPI — objetivo: Proporcionar documentación OpenAPI para la API. — entregable (NO resolver): API REST con documentación OpenAPI completa y actualizada.
+- Fase 1: Definición de endpoints y modelo de datos — objetivo: Definir los endpoints necesarios y el modelo de datos para representar los préstamos y sus atributos. — entregable (NO resolver): Modelo de datos y definición de endpoints para la API REST.
+- Fase 2: Implementación de la lógica de negocio — objetivo: Implementar la lógica de negocio para la creación y consulta de préstamos, incluyendo la validación de datos y la integración con el motor de evaluación de riesgos. — entregable (NO resolver): Lógica de negocio implementada para la creación y consulta de préstamos, con integración al motor de evaluación de riesgos.
+- Fase 3: Documentación y pruebas — objetivo: Documentar la API utilizando OpenAPI y realizar pruebas para garantizar su correcto funcionamiento. — entregable (NO resolver): API documentada y pruebas unitarias y de integración realizadas.
 
 Eres un asistente experto en análisis, corrección y generación de archivos de cualquier tipo:
 código fuente, documentación, hojas de cálculo, documentos Word, configuraciones, entre otros.
@@ -160,710 +160,343 @@ El participante que recibirá este proyecto los debe encontrar y resolver él mi
 
 INPUT
 Aquí está la cadena con los archivos:
-src/main/java/com/example/api/ProductController.java
-package com.example.api;
+// === ARCHIVO: src/main/java/com/example/loanmanagement/api/LoanController.java ===
+package com.example.loanmanagement.api;
 
-import com.example.core.ProductService;
-import com.example.core.Product;
-import com.example.core.ProductNotFoundException;
-import com.example.core.DuplicateProductNameException;
-import com.example.core.InvalidPriceException;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import com.example.loanmanagement.application.LoanService;
+import com.example.loanmanagement.domain.Loan;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/products")
-@Tag(name = "Product Controller", description = "API for managing products")
-public class ProductController {
+@RequestMapping("/loans")
+public class LoanController {
 
-    private final ProductService productService;
+    private final LoanService loanService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+    @Autowired
+    public LoanController(LoanService loanService) {
+        this.loanService = loanService;
     }
 
-    @Operation(summary = "Create a new product", description = "Creates a new product with the given details")
-    @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) throws DuplicateProductNameException, InvalidPriceException {
-        Product createdProduct = productService.createProduct(product);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
-    }
-
-    @Operation(summary = "Get all products", description = "Retrieves a list of all products")
+    @Operation(summary = "Get all loans")
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    public ResponseEntity<?> getAllLoans() {
+        return ResponseEntity.ok(loanService.getAllLoans());
     }
 
-    @Operation(summary = "Get product by ID", description = "Retrieves a product by its ID")
+    @Operation(summary = "Get loan by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) throws ProductNotFoundException {
-        Product product = productService.getProductById(id);
-        return new ResponseEntity<>(product, HttpStatus.OK);
+    public ResponseEntity<?> getLoanById(@PathVariable Long id) {
+        return ResponseEntity.ok(loanService.getLoanById(id));
     }
 
-    @Operation(summary = "Update a product", description = "Updates a product with the given details")
+    @Operation(summary = "Create a new loan")
+    @PostMapping
+    public ResponseEntity<?> createLoan(@RequestBody Loan loan) {
+        return ResponseEntity.ok(loanService.createLoan(loan));
+    }
+
+    @Operation(summary = "Update loan by ID")
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) throws ProductNotFoundException, DuplicateProductNameException, InvalidPriceException {
-        Product updatedProduct = productService.updateProduct(id, product);
-        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    public ResponseEntity<?> updateLoan(@PathVariable Long id, @RequestBody Loan loan) {
+        return ResponseEntity.ok(loanService.updateLoan(id, loan));
     }
 
-    @Operation(summary = "Delete a product", description = "Deletes a product by its ID")
+    @Operation(summary = "Delete loan by ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) throws ProductNotFoundException {
-        productService.deleteProduct(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> deleteLoan(@PathVariable Long id) {
+        loanService.deleteLoan(id);
+        return ResponseEntity.ok().build();
     }
 }
 
+// === ARCHIVO: src/main/java/com/example/loanmanagement/application/LoanService.java ===
+package com.example.loanmanagement.application;
 
-src/main/java/com/example/core/ProductService.java
-package com.example.core;
-
-import java.util.List;
-import java.util.Optional;
-
-public interface ProductService {
-    Product createProduct(Product product) throws DuplicateProductNameException, InvalidPriceException;
-    List<Product> getAllProducts();
-    Product getProductById(Long id) throws ProductNotFoundException;
-    Product updateProduct(Long id, Product product) throws ProductNotFoundException, DuplicateProductNameException, InvalidPriceException;
-    void deleteProduct(Long id) throws ProductNotFoundException;
-}
-
-
-src/main/java/com/example/core/ProductServiceImpl.java
-package com.example.core;
-
-import com.example.infrastructure.ProductRepository;
+import com.example.loanmanagement.domain.Loan;
+import com.example.loanmanagement.domain.LoanRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ProductServiceImpl implements ProductService {
+public class LoanService {
 
-    private final ProductRepository productRepository;
+    private final LoanRepository loanRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public LoanService(LoanRepository loanRepository) {
+        this.loanRepository = loanRepository;
     }
 
-    @Override
-    public Product createProduct(Product product) throws DuplicateProductNameException, InvalidPriceException {
-        if (productRepository.findByName(product.getName()).isPresent()) {
-            throw new DuplicateProductNameException("Product name already exists");
+    public List<Loan> getAllLoans() {
+        return loanRepository.findAll();
+    }
+
+    public Optional<Loan> getLoanById(Long id) {
+        return loanRepository.findById(id);
+    }
+
+    public Loan createLoan(Loan loan) {
+        return loanRepository.save(loan);
+    }
+
+    public Loan updateLoan(Long id, Loan loan) {
+        if (loanRepository.existsById(id)) {
+            loan.setId(id);
+            return loanRepository.save(loan);
         }
-        if (product.getPrice() < 0) {
-            throw new InvalidPriceException("Price cannot be negative");
-        }
-        return productRepository.save(product);
+        throw new RuntimeException("Loan not found");
     }
 
-    @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
-
-    @Override
-    public Product getProductById(Long id) throws ProductNotFoundException {
-        return productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
-    }
-
-    @Override
-    public Product updateProduct(Long id, Product product) throws ProductNotFoundException, DuplicateProductNameException, InvalidPriceException {
-        Product existingProduct = getProductById(id);
-        if (!existingProduct.getName().equals(product.getName()) && productRepository.findByName(product.getName()).isPresent()) {
-            throw new DuplicateProductNameException("Product name already exists");
-        }
-        if (product.getPrice() < 0) {
-            throw new InvalidPriceException("Price cannot be negative");
-        }
-        existingProduct.setName(product.getName());
-        existingProduct.setPrice(product.getPrice());
-        existingProduct.setStock(product.getStock());
-        existingProduct.setCategory(product.getCategory());
-        return productRepository.save(existingProduct);
-    }
-
-    @Override
-    public void deleteProduct(Long id) throws ProductNotFoundException {
-        Product product = getProductById(id);
-        productRepository.delete(product);
+    public void deleteLoan(Long id) {
+        loanRepository.deleteById(id);
     }
 }
 
+// === ARCHIVO: src/main/java/com/example/loanmanagement/domain/Loan.java ===
+package com.example.loanmanagement.domain;
 
-src/main/java/com/example/core/Product.java
-package com.example.core;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.persistence.*;
 
 @Entity
-public class Product {
+public class Loan {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull
-    private String name;
-
-    @NotNull
-    @Positive
-    private Double price;
-
-    @NotNull
-    private Integer stock;
-
-    @NotNull
-    private String category;
+    private Double amount;
+    private Integer term;
+    private Double interestRate;
+    private String status;
 
     // Getters and setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
 }
 
-
-src/main/java/com/example/infrastructure/ProductRepository.java
-package com.example.infrastructure;
-
-import com.example.core.Product;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.Optional;
-
-@Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
-    Optional<Product> findByName(String name);
-}
-
-
-src/main/resources/application.properties
+// === ARCHIVO: src/main/resources/application.properties ===
 spring.datasource.url=jdbc:h2:mem:testdb
 spring.datasource.driverClassName=org.h2.Driver
 spring.datasource.username=sa
 spring.datasource.password=
 spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
 spring.h2.console.enabled=true
-springdoc.api-docs.path=/api-docs
 
-
-src/main/resources/openapi.yaml
+// === ARCHIVO: src/main/resources/openapi.yaml ===
 openapi: 3.0.1
 info:
-  title: Product API
+  title: Loan Management API
   version: 1.0.0
-  description: API for managing products
 paths:
-  /api/products:
+  /loans:
+    get:
+      summary: Get all loans
+      responses:
+        '200':
+          description: Successful operation
     post:
-      summary: Create a new product
-      operationId: createProduct
+      summary: Create a new loan
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Product'
+              $ref: '#/components/schemas/Loan'
       responses:
         '201':
-          description: Product created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
+          description: Loan created
+  /loans/{id}:
     get:
-      summary: Get all products
-      operationId: getAllProducts
-      responses:
-        '200':
-          description: List of products
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Product'
-  /api/products/{id}:
-    get:
-      summary: Get product by ID
-      operationId: getProductById
+      summary: Get loan by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
-          description: Product found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
+          description: Successful operation
     put:
-      summary: Update a product
-      operationId: updateProduct
+      summary: Update loan by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Product'
+              $ref: '#/components/schemas/Loan'
       responses:
         '200':
-          description: Product updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
+          description: Loan updated
     delete:
-      summary: Delete a product
-      operationId: deleteProduct
+      summary: Delete loan by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '204':
-          description: Product deleted
+          description: Loan deleted
 components:
   schemas:
-    Product:
+    Loan:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        price:
+          type: integer
+          format: int64
+        amount:
           type: number
           format: double
-        stock:
+        term:
           type: integer
-        category:
+          format: int32
+        interestRate:
+          type: number
+          format: double
+        status:
           type: string
-      required:
-        - name
-        - price
-        - stock
-        - category
 
+// === ARCHIVO: src/test/java/com/example/loanmanagement/api/LoanControllerTest.java ===
+package com.example.loanmanagement.api;
 
-src/main/java/com/example/api/ProductController.java
-package com.example.api;
-
-import com.example.core.ProductService;
-import com.example.core.Product;
-import com.example.core.ProductNotFoundException;
-import com.example.core.DuplicateProductNameException;
-import com.example.core.InvalidPriceException;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import com.example.loanmanagement.application.LoanService;
+import com.example.loanmanagement.domain.Loan;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/products")
-@Tag(name = "Product Controller", description = "API for managing products")
-public class ProductController {
-
-    private final ProductService productService;
-
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
-    @Operation(summary = "Create a new product", description = "Creates a new product with the given details")
-    @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) throws DuplicateProductNameException, InvalidPriceException {
-        Product createdProduct = productService.createProduct(product);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
-    }
-
-    @Operation(summary = "Get all products", description = "Retrieves a list of all products")
-    @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Get product by ID", description = "Retrieves a product by its ID")
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) throws ProductNotFoundException {
-        Product product = productService.getProductById(id);
-        return new ResponseEntity<>(product, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Update a product", description = "Updates a product with the given details")
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) throws ProductNotFoundException, DuplicateProductNameException, InvalidPriceException {
-        Product updatedProduct = productService.updateProduct(id, product);
-        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Delete a product", description = "Deletes a product by its ID")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) throws ProductNotFoundException {
-        productService.deleteProduct(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-}
-
-
-src/main/java/com/example/core/ProductService.java
-package com.example.core;
-
-import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-public interface ProductService {
-    Product createProduct(Product product) throws DuplicateProductNameException, InvalidPriceException;
-    List<Product> getAllProducts();
-    Product getProductById(Long id) throws ProductNotFoundException;
-    Product updateProduct(Long id, Product product) throws ProductNotFoundException, DuplicateProductNameException, InvalidPriceException;
-    void deleteProduct(Long id) throws ProductNotFoundException;
+class LoanControllerTest {
+
+    @Mock
+    private LoanService loanService;
+
+    @InjectMocks
+    private LoanController loanController;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testGetAllLoans() {
+        when(loanService.getAllLoans()).thenReturn(Arrays.asList(new Loan()));
+        ResponseEntity<?> response = loanController.getAllLoans();
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testGetLoanById() {
+        when(loanService.getLoanById(1L)).thenReturn(Optional.of(new Loan()));
+        ResponseEntity<?> response = loanController.getLoanById(1L);
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testCreateLoan() {
+        when(loanService.createLoan(new Loan())).thenReturn(new Loan());
+        ResponseEntity<?> response = loanController.createLoan(new Loan());
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testUpdateLoan() {
+        when(loanService.updateLoan(1L, new Loan())).thenReturn(new Loan());
+        ResponseEntity<?> response = loanController.updateLoan(1L, new Loan());
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testDeleteLoan() {
+        doNothing().when(loanService).deleteLoan(1L);
+        ResponseEntity<?> response = loanController.deleteLoan(1L);
+        assertEquals(200, response.getStatusCodeValue());
+    }
 }
 
+// === ARCHIVO: src/test/java/com/example/loanmanagement/application/LoanServiceTest.java ===
+package com.example.loanmanagement.application;
 
-src/main/java/com/example/core/ProductServiceImpl.java
-package com.example.core;
-
-import com.example.infrastructure.ProductRepository;
-import org.springframework.stereotype.Service;
-import java.util.List;
+import com.example.loanmanagement.domain.Loan;
+import com.example.loanmanagement.domain.LoanRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import java.util.Arrays;
 import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@Service
-public class ProductServiceImpl implements ProductService {
+class LoanServiceTest {
 
-    private final ProductRepository productRepository;
+    @Mock
+    private LoanRepository loanRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    @InjectMocks
+    private LoanService loanService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
-    @Override
-    public Product createProduct(Product product) throws DuplicateProductNameException, InvalidPriceException {
-        if (productRepository.findByName(product.getName()).isPresent()) {
-            throw new DuplicateProductNameException("Product name already exists");
-        }
-        if (product.getPrice() < 0) {
-            throw new InvalidPriceException("Price cannot be negative");
-        }
-        return productRepository.save(product);
+    @Test
+    void testGetAllLoans() {
+        when(loanRepository.findAll()).thenReturn(Arrays.asList(new Loan()));
+        assertEquals(1, loanService.getAllLoans().size());
     }
 
-    @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    @Test
+    void testGetLoanById() {
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(new Loan()));
+        assertEquals(Optional.of(new Loan()), loanService.getLoanById(1L));
     }
 
-    @Override
-    public Product getProductById(Long id) throws ProductNotFoundException {
-        return productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+    @Test
+    void testCreateLoan() {
+        when(loanRepository.save(new Loan())).thenReturn(new Loan());
+        assertNotNull(loanService.createLoan(new Loan()));
     }
 
-    @Override
-    public Product updateProduct(Long id, Product product) throws ProductNotFoundException, DuplicateProductNameException, InvalidPriceException {
-        Product existingProduct = getProductById(id);
-        if (!existingProduct.getName().equals(product.getName()) && productRepository.findByName(product.getName()).isPresent()) {
-            throw new DuplicateProductNameException("Product name already exists");
-        }
-        if (product.getPrice() < 0) {
-            throw new InvalidPriceException("Price cannot be negative");
-        }
-        existingProduct.setName(product.getName());
-        existingProduct.setPrice(product.getPrice());
-        existingProduct.setStock(product.getStock());
-        existingProduct.setCategory(product.getCategory());
-        return productRepository.save(existingProduct);
+    @Test
+    void testUpdateLoan() {
+        when(loanRepository.existsById(1L)).thenReturn(true);
+        when(loanRepository.save(new Loan())).thenReturn(new Loan());
+        assertNotNull(loanService.updateLoan(1L, new Loan()));
     }
 
-    @Override
-    public void deleteProduct(Long id) throws ProductNotFoundException {
-        Product product = getProductById(id);
-        productRepository.delete(product);
+    @Test
+    void testDeleteLoan() {
+        doNothing().when(loanRepository).deleteById(1L);
+        loanService.deleteLoan(1L);
+        verify(loanRepository, times(1)).deleteById(1L);
     }
 }
 
-
-src/main/java/com/example/core/Product.java
-package com.example.core;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-
-@Entity
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @NotNull
-    private String name;
-
-    @NotNull
-    @Positive
-    private Double price;
-
-    @NotNull
-    private Integer stock;
-
-    @NotNull
-    private String category;
-
-    // Getters and setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-}
-
-
-src/main/java/com/example/infrastructure/ProductRepository.java
-package com.example.infrastructure;
-
-import com.example.core.Product;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.Optional;
-
-@Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
-    Optional<Product> findByName(String name);
-}
-
-
-src/main/resources/application.properties
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.driverClassName=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.h2.console.enabled=true
-springdoc.api-docs.path=/api-docs
-
-
-src/main/resources/openapi.yaml
-openapi: 3.0.1
-info:
-  title: Product API
-  version: 1.0.0
-  description: API for managing products
-paths:
-  /api/products:
-    post:
-      summary: Create a new product
-      operationId: createProduct
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Product'
-      responses:
-        '201':
-          description: Product created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
-    get:
-      summary: Get all products
-      operationId: getAllProducts
-      responses:
-        '200':
-          description: List of products
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Product'
-  /api/products/{id}:
-    get:
-      summary: Get product by ID
-      operationId: getProductById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Product found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
-    put:
-      summary: Update a product
-      operationId: updateProduct
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Product'
-      responses:
-        '200':
-          description: Product updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
-    delete:
-      summary: Delete a product
-      operationId: deleteProduct
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Product deleted
-components:
-  schemas:
-    Product:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        price:
-          type: number
-          format: double
-        stock:
-          type: integer
-        category:
-          type: string
-      required:
-        - name
-        - price
-        - stock
-        - category
 ```
